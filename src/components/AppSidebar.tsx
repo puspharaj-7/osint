@@ -7,17 +7,17 @@ import {
   Bell,
   Shield,
   LogOut,
-  Search,
-} from 'lucide-react';
+  Search } from
+'lucide-react';
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/new-investigation', icon: Plus, label: 'New Investigation' },
-  { to: '/cases', icon: FolderSearch, label: 'Cases' },
-  { to: '/graph', icon: Network, label: 'Graph Intelligence' },
-  { to: '/alerts', icon: Bell, label: 'Alerts Center' },
-  { to: '/admin', icon: Shield, label: 'Admin Panel' },
-];
+{ to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+{ to: '/new-investigation', icon: Plus, label: 'New Investigation' },
+{ to: '/cases', icon: FolderSearch, label: 'Cases' },
+{ to: '/graph', icon: Network, label: 'Graph Intelligence' },
+{ to: '/alerts', icon: Bell, label: 'Alerts Center' },
+{ to: '/admin', icon: Shield, label: 'Admin Panel' }];
+
 
 const AppSidebar = () => {
   const location = useLocation();
@@ -30,29 +30,29 @@ const AppSidebar = () => {
             <Search className="w-4 h-4 text-primary" />
           </div>
           <div>
-            <h1 className="font-display text-sm font-bold text-foreground tracking-wider">OSIRIS</h1>
+            <h1 className="font-display text-sm font-bold text-foreground tracking-wider">OSINT</h1>
             <p className="text-[10px] text-muted-foreground tracking-widest uppercase">Intelligence Platform</p>
           </div>
         </div>
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {navItems.map(item => {
+        {navItems.map((item) => {
           const isActive = location.pathname === item.to || location.pathname.startsWith(item.to + '/');
           return (
             <NavLink
               key={item.to}
               to={item.to}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all ${
-                isActive
-                  ? 'bg-primary/10 text-primary border border-primary/20'
-                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border border-transparent'
-              }`}
-            >
+              isActive ?
+              'bg-primary/10 text-primary border border-primary/20' :
+              'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border border-transparent'}`
+              }>
+              
               <item.icon className="w-4 h-4" />
               <span className="font-medium">{item.label}</span>
-            </NavLink>
-          );
+            </NavLink>);
+
         })}
       </nav>
 
@@ -70,8 +70,8 @@ const AppSidebar = () => {
           </NavLink>
         </div>
       </div>
-    </aside>
-  );
+    </aside>);
+
 };
 
 export default AppSidebar;
