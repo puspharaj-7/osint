@@ -1,15 +1,16 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { allAlerts, type Alert } from '@/lib/mock-data';
+import { useStore } from '@/lib/store';
 import StatusBadge from '@/components/StatusBadge';
 
 const Alerts = () => {
-  const [alerts, setAlerts] = useState<Alert[]>(allAlerts);
+  const { state: { alerts }, dispatch } = useStore();
 
   const markAllRead = () => {
-    setAlerts(prev => prev.map(a => ({ ...a, read: true })));
+    alerts.forEach(a => {
+      if (!a.read) dispatch({ type: 'MARK_ALERT_READ', payload: a.id });
+    });
   };
 
   const unreadCount = alerts.filter(a => !a.read).length;

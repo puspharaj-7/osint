@@ -1,7 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { mockGraphNodes, mockGraphEdges, type GraphNode } from '@/lib/mock-data';
+import { useStore } from '@/lib/store';
 import { User, Mail, Phone, Building2, Globe, Wifi, Share2, Image } from 'lucide-react';
+import type { GraphNode } from '@/lib/mock-data';
 
 const nodeIcons: Record<string, typeof User> = {
   person: User,
@@ -26,8 +28,16 @@ const nodeColors: Record<string, string> = {
 };
 
 const GraphView = () => {
+  const [searchParams] = useSearchParams();
+  const caseIdFilter = searchParams.get('case');
+  const { state: { graphNodes, graphEdges } } = useStore();
+  
+  // NOTE: In a real app we would filter nodes/edges by investigation ID.
+  // For now we show all global nodes as the mapping isn't 1:1 in the store yet.
+  const nodes = graphNodes;
+  const edges = graphEdges;
+
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [nodes] = useState(mockGraphNodes);
   const svgRef = useRef<SVGSVGElement>(null);
 
   return (
@@ -57,7 +67,7 @@ const GraphView = () => {
           <rect width="700" height="600" fill="url(#grid)" />
 
           {/* Edges */}
-          {mockGraphEdges.map((edge, i) => {
+          {edges.map((edge, i) => {
             const source = nodes.find(n => n.id === edge.source);
             const target = nodes.find(n => n.id === edge.target);
             if (!source || !target) return null;

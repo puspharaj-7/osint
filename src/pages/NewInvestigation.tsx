@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, X, Search, Zap, Radar } from 'lucide-react';
+import { Plus, X, Search, Zap, Radar, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useScanRunner, useStore } from '@/lib/store';
 
 const inputTypes = [
   { value: 'name', label: 'Name', placeholder: 'John Doe' },
@@ -25,10 +26,13 @@ interface InputField {
 
 const NewInvestigation = () => {
   const navigate = useNavigate();
+  const { startScan } = useScanRunner();
+  const { dispatch } = useStore();
   const [fields, setFields] = useState<InputField[]>([
     { id: 1, type: 'name', value: '' },
   ]);
   const [scanning, setScanning] = useState(false);
+  const [scanStep, setScanStep] = useState<string>('');
 
   const addField = () => {
     setFields(prev => [...prev, { id: Date.now(), type: 'email', value: '' }]);
@@ -44,11 +48,54 @@ const NewInvestigation = () => {
     setFields(prev => prev.map(f => f.id === id ? { ...f, [key]: val } : f));
   };
 
-  const startInvestigation = () => {
+  const startInvestigation = async () => {
     setScanning(true);
-    setTimeout(() => {
-      navigate('/cases/1');
-    }, 2000);
+    const validFields = fields.filter(f => f.value.trim().length > 0);
+    const primaryTarget = validFields[0]?.value || 'Unknown Target';
+    const primaryType = validFields[0]?.type || 'unknown';
+    
+    const newCaseId = `CASE-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const investigationId = `inv_${Date.now()}`;
+
+    dispatch({
+      type: 'ADD_INVESTIGATION',
+      payload: {
+        id: investigationId,
+        caseId: newCaseId,
+        target: primaryTarget,
+        targetType: primaryType,
+        status: 'pending',
+        riskScore: 0,
+        riskLevel: 'low',
+        identityConfidence: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        inputs: validFields,
+        alerts: [],
+        evidence: [],
+        timeline: [
+          {
+            id: `t_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            event: 'Investigation initiated',
+            type: 'scan'
+          }
+        ],
+        notes: [],
+        scanStatus: 'quick'
+      }
+    });
+
+    try {
+      await startScan(investigationId, validFields, (step) => {
+        setScanStep(step);
+      });
+      navigate(`/cases/${investigationId}`);
+    } catch (err) {
+      console.error(err);
+      setScanning(false);
+      setScanStep('Scan failed. Check console.');
+    }
   };
 
   return (
@@ -58,6 +105,17 @@ const NewInvestigation = () => {
         <p className="text-sm text-muted-foreground mb-8">Enter one or more identifiers to begin intelligence gathering</p>
 
         <div className="glass-panel p-6 mb-6">
+          <div className="p-4 rounded-md border border-warning/30 bg-warning/10 flex items-start gap-3 mb-6">
+            <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-medium text-warning font-display">API Keys Required</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                To run live OSINT scans, you must configure your API keys in the <code className="text-foreground">.env</code> file. 
+                Copy <code className="text-foreground">.env.example</code> to <code className="text-foreground">.env</code> and restart the development server. 
+                Without keys, the platform will only return mock data or fail.
+              </p>
+            </div>
+          </div>
           <h2 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Target Identifiers</h2>
           <div className="space-y-3">
             {fields.map((field, i) => {
@@ -127,7 +185,7 @@ const NewInvestigation = () => {
           {scanning ? (
             <span className="flex items-center gap-2">
               <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              INITIATING SCAN...
+              {scanStep ? scanStep.toUpperCase() : 'INITIATING SCAN...'}
             </span>
           ) : (
             <span className="flex items-center gap-2">

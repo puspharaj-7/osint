@@ -2,20 +2,34 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Network, FileText, Clock, MessageSquare, Brain, Shield, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { mockInvestigations } from '@/lib/mock-data';
+import { useStore } from '@/lib/store';
 import RiskGauge from '@/components/RiskGauge';
 import StatusBadge from '@/components/StatusBadge';
 
 const CaseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const inv = mockInvestigations.find(i => i.id === id) || mockInvestigations[0];
+  const { state: { investigations } } = useStore();
+  
+  const inv = investigations.find(i => i.id === id);
+
+  if (!inv) {
+    return (
+      <div className="p-8 text-center mt-20">
+        <h2 className="text-xl font-display text-foreground mb-4">Investigation Not Found</h2>
+        <Button onClick={() => navigate('/cases')}>Return to Cases</Button>
+      </div>
+    );
+  }
 
   const aiSummary = `The subject "${inv.target}" appears associated with ${inv.evidence.length} intelligence sources. ${
     inv.alerts.length > 0 ? `There are ${inv.alerts.length} active alerts requiring attention. ` : ''
   }${inv.evidence.find(e => e.type === 'breach') ? 'The email appears in known breach databases. ' : ''}${
     inv.evidence.find(e => e.type === 'domain') ? 'Domain registration timing may warrant further investigation. ' : ''
-  }\n\nRisk Level: ${inv.riskLevel.toUpperCase()}\nRecommendation: ${
+  }
+
+Risk Level: ${inv.riskLevel.toUpperCase()}
+Recommendation: ${
     inv.riskScore >= 70 ? 'Immediate deep investigation recommended.' : inv.riskScore >= 40 ? 'Further investigation required.' : 'Low risk — routine monitoring sufficient.'
   }`;
 
@@ -72,31 +86,48 @@ const CaseDetails = () => {
             <p className="text-sm text-foreground/90 whitespace-pre-line leading-relaxed">{aiSummary}</p>
           </motion.div>
 
-          {/* Evidence */}
+         {/* Evidence */}
           <div className="glass-panel p-5">
             <h3 className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
               <FileText className="w-3 h-3" /> Evidence Sources ({inv.evidence.length})
             </h3>
             <div className="space-y-3">
-              {inv.evidence.map((ev, i) => (
-                <motion.div
-                  key={ev.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
-                  className="p-4 rounded-md bg-secondary/50 border border-border/50"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display text-xs text-primary uppercase">{ev.source}</span>
-                      <span className="text-xs text-muted-foreground">·</span>
-                      <span className="text-sm font-medium text-foreground">{ev.title}</span>
+              {inv.evidence.map((ev, i) => {
+                let sourceColor = 'bg-primary/20 text-primary border-primary/30';
+                switch (ev.source.toLowerCase()) {
+                  case 'haveibeenpwned': sourceColor = 'bg-destructive/20 text-destructive border-destructive/30'; break;
+                  case 'virustotal': sourceColor = 'bg-warning/20 text-warning border-warning/30'; break;
+                  case 'whoisxml': sourceColor = 'bg-accent/20 text-accent border-accent/30'; break;
+                  case 'opensanctions': sourceColor = 'bg-purple-500/20 text-purple-400 border-purple-500/30'; break;
+                  case 'opencorporates': sourceColor = 'bg-blue-500/20 text-blue-400 border-blue-500/30'; break;
+                  case 'hunter.io': sourceColor = 'bg-orange-500/20 text-orange-400 border-orange-500/30'; break;
+                  case 'ipinfo': sourceColor = 'bg-green-500/20 text-green-400 border-green-500/30'; break;
+                  case 'abstractapi': sourceColor = 'bg-pink-500/20 text-pink-400 border-pink-500/30'; break;
+                }
+
+                return (
+                  <motion.div
+                    key={ev.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="p-4 rounded-md bg-secondary/50 border border-border/50"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-display border ${sourceColor}`}>
+                          {ev.source}
+                        </span>
+                        <span className="text-sm font-medium text-foreground">{ev.title}</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-display px-2 py-0.5 rounded bg-background border border-border">
+                        {ev.confidence}% CONF.
+                      </span>
                     </div>
-                    <span className="text-xs text-muted-foreground font-display">{ev.confidence}% conf.</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground whitespace-pre-line">{ev.content}</p>
-                </motion.div>
-              ))}
+                    <p className="text-xs text-muted-foreground whitespace-pre-line bg-background/50 p-2 rounded border border-border/20 mt-2">{ev.content}</p>
+                  </motion.div>
+                );
+              })}
               {inv.evidence.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-4">Scan in progress — evidence will appear here</p>
               )}

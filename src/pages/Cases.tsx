@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { mockInvestigations } from '@/lib/mock-data';
+import { useStore } from '@/lib/store';
 import RiskGauge from '@/components/RiskGauge';
 import StatusBadge from '@/components/StatusBadge';
 
 const Cases = () => {
   const navigate = useNavigate();
+  const { state: { investigations } } = useStore();
 
   return (
     <div className="p-8">
@@ -25,7 +26,14 @@ const Cases = () => {
             </tr>
           </thead>
           <tbody>
-            {mockInvestigations.map((inv, i) => (
+            {investigations.length === 0 && (
+              <tr>
+                <td colSpan={6} className="p-8 text-center text-muted-foreground text-sm">
+                  No cases found. Start a new investigation to see results here.
+                </td>
+              </tr>
+            )}
+            {investigations.map((inv, i) => (
               <motion.tr
                 key={inv.id}
                 initial={{ opacity: 0 }}
