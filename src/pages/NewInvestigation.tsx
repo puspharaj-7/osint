@@ -99,7 +99,7 @@ const NewInvestigation = () => {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-3xl mx-auto">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="font-display text-2xl font-bold text-foreground tracking-wider mb-1">NEW INVESTIGATION</h1>
         <p className="text-sm text-muted-foreground mb-8">Enter one or more identifiers to begin intelligence gathering</p>
@@ -126,12 +126,12 @@ const NewInvestigation = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="flex items-center gap-3"
+                  className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
                 >
                   <select
                     value={field.type}
                     onChange={e => updateField(field.id, 'type', e.target.value)}
-                    className="w-36 h-10 rounded-md bg-secondary border border-border text-foreground text-sm px-3 font-display focus:border-primary focus:outline-none"
+                    className="w-full sm:w-36 h-10 rounded-md bg-secondary border border-border text-foreground text-sm px-3 font-display focus:border-primary focus:outline-none"
                   >
                     {inputTypes.map(t => (
                       <option key={t.value} value={t.value}>{t.label}</option>
@@ -159,7 +159,7 @@ const NewInvestigation = () => {
 
         <div className="glass-panel p-6 mb-6">
           <h2 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider mb-4">Scan Options</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-4 rounded-md border border-primary/30 bg-primary/5">
               <div className="flex items-center gap-2 mb-2">
                 <Zap className="w-4 h-4 text-primary" />

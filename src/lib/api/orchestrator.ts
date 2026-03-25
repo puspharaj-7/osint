@@ -13,6 +13,7 @@ import { searchSanctions } from './opensanctions';
 import { verifyEmail, searchDomainEmails } from './hunter';
 import { searchCompany } from './opencorporates';
 import { lookupPhone } from './phone';
+import { lookupSocialProfiles } from './social';
 import { uid, nowISO } from './client';
 import type { ScanInput, ScanResult, ApiEvidence, ApiAlert, GraphNodeResult, GraphEdgeResult } from './types';
 
@@ -80,23 +81,9 @@ export async function runScan(
 
       case 'username':
       case 'social':
-        // Social platform lookups — add as evidence placeholder (requires scrapers)
         tasks.push({
-          label: `Social profile: ${v}`,
-          fn: async () => ({
-            evidence: [
-              {
-                id: uid('social'),
-                source: 'Social Discovery',
-                type: 'social' as const,
-                title: `Social Target: ${v}`,
-                content: `Identifier "${v}" queued for manual social media investigation.\n\nRecommended: Search Twitter/X, LinkedIn, Instagram, and GitHub for this username.`,
-                confidence: 40,
-                timestamp: nowISO(),
-              },
-            ],
-            alerts: [],
-          }),
+          label: `Social profile lookup: ${v}`,
+          fn: async () => lookupSocialProfiles(v),
         });
         break;
 

@@ -1,8 +1,9 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Network, FileText, Clock, MessageSquare, Brain, Shield, Fingerprint } from 'lucide-react';
+import { ArrowLeft, Network, FileText, Clock, MessageSquare, Brain, Shield, Fingerprint, Download, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
+import { exportCaseToPDF } from '@/lib/pdf-export';
 import RiskGauge from '@/components/RiskGauge';
 import StatusBadge from '@/components/StatusBadge';
 
@@ -35,8 +36,8 @@ Recommendation: ${
 
   return (
     <div className="p-8">
-      <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/cases')} className="text-muted-foreground hover:text-foreground">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/cases')} className="text-muted-foreground hover:text-foreground self-start sm:self-auto">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
         </Button>
         <div className="flex-1">
@@ -47,12 +48,17 @@ Recommendation: ${
           </div>
           <p className="text-sm text-muted-foreground font-display">{inv.caseId} · {inv.targetType} · Scan: {inv.scanStatus}</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => navigate(`/graph?case=${inv.id}`)} className="text-accent hover:text-accent/80">
-          <Network className="w-4 h-4 mr-1" /> View Graph
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => exportCaseToPDF(inv)} className="text-muted-foreground hover:text-foreground">
+            <Download className="w-4 h-4 mr-1" /> Export PDF
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/graph?case=${inv.id}`)} className="text-accent hover:text-accent/80">
+            <Network className="w-4 h-4 mr-1" /> View Graph
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Left Column - Metrics */}
         <div className="space-y-6">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel p-5 flex flex-col items-center">
@@ -60,6 +66,18 @@ Recommendation: ${
           </motion.div>
           <div className="glass-panel p-5 flex flex-col items-center">
             <RiskGauge score={inv.identityConfidence} size="md" label="Identity Confidence" />
+          </div>
+          <div className="glass-panel p-5">
+            <h3 className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
+              <Calendar className="w-3 h-3" /> Schedule Scan
+            </h3>
+            <select className="w-full h-9 rounded-md bg-secondary border border-border text-foreground text-xs px-3 font-display focus:border-primary focus:outline-none mb-3">
+              <option value="none">Manual only</option>
+              <option value="daily">Daily scan</option>
+              <option value="weekly">Weekly scan</option>
+              <option value="monthly">Monthly scan</option>
+            </select>
+            <Button variant="secondary" className="w-full text-xs h-8">Update Schedule</Button>
           </div>
           <div className="glass-panel p-5">
             <h3 className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
@@ -77,7 +95,7 @@ Recommendation: ${
         </div>
 
         {/* Center - Evidence + AI Summary */}
-        <div className="col-span-2 space-y-6">
+        <div className="col-span-1 lg:col-span-2 space-y-6">
           {/* AI Summary */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-panel p-5 glow-border">
             <h3 className="font-display text-xs uppercase tracking-wider text-primary mb-3 flex items-center gap-2">

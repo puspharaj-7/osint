@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Users, Settings, Activity, Database } from 'lucide-react';
+import { Users, Settings, Activity, Database, Shield } from 'lucide-react';
 import StatusBadge from '@/components/StatusBadge';
 
 const modules = [
@@ -20,13 +20,28 @@ const users = [
   { name: 'Mike Johnson', role: 'Investigator', status: 'active', cases: 5 },
 ];
 
+// Simulation of RBAC user role
+const currentUserRole = 'admin'; // Change to 'analyst' to test RBAC
+
 const Admin = () => {
+  if (currentUserRole !== 'admin') {
+    return (
+      <div className="p-8 h-[calc(100vh-4rem)] flex flex-col items-center justify-center">
+        <Shield className="w-16 h-16 text-destructive mb-4" />
+        <h1 className="font-display text-2xl font-bold text-foreground tracking-wider mb-2">ACCESS DENIED</h1>
+        <p className="text-muted-foreground text-center max-w-md">
+          You do not have the required clearance level to access the Administrative Command Center.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8">
       <h1 className="font-display text-2xl font-bold text-foreground tracking-wider mb-1">ADMIN PANEL</h1>
       <p className="text-sm text-muted-foreground mb-8">System configuration and user management</p>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { icon: Users, label: 'Users', value: '3' },
           { icon: Activity, label: 'Active Modules', value: '7' },
@@ -41,7 +56,7 @@ const Admin = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-panel p-6">
           <h2 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider mb-4">OSINT Modules</h2>
           <div className="space-y-2">

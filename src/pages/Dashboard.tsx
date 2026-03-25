@@ -2,26 +2,29 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Activity, AlertTriangle, Shield, FolderSearch, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { mockInvestigations, allAlerts } from '@/lib/mock-data';
+import { useStore } from '@/lib/store';
 import RiskGauge from '@/components/RiskGauge';
 import StatusBadge from '@/components/StatusBadge';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const activeCount = mockInvestigations.filter(i => i.status === 'active').length;
-  const unreadAlerts = allAlerts.filter(a => !a.read).length;
-  const avgRisk = Math.round(mockInvestigations.reduce((sum, i) => sum + i.riskScore, 0) / mockInvestigations.length);
+  const { state: { investigations, alerts } } = useStore();
+  const activeCount = investigations.filter(i => i.status === 'active').length;
+  const unreadAlerts = alerts.filter(a => !a.read).length;
+  const avgRisk = investigations.length > 0
+    ? Math.round(investigations.reduce((sum, i) => sum + i.riskScore, 0) / investigations.length)
+    : 0;
 
   const stats = [
     { label: 'Active Cases', value: activeCount, icon: FolderSearch, color: 'text-primary' },
-    { label: 'Total Cases', value: mockInvestigations.length, icon: Activity, color: 'text-accent' },
+    { label: 'Total Cases', value: investigations.length, icon: Activity, color: 'text-accent' },
     { label: 'Unread Alerts', value: unreadAlerts, icon: AlertTriangle, color: 'text-warning' },
     { label: 'Avg Risk Score', value: avgRisk, icon: Shield, color: 'text-destructive' },
   ];
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground tracking-wider">COMMAND CENTER</h1>
           <p className="text-sm text-muted-foreground mt-1">Investigation overview and active intelligence</p>
@@ -31,7 +34,7 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -49,9 +52,9 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Investigations */}
-        <div className="col-span-2 glass-panel p-6">
+        <div className="col-span-1 lg:col-span-2 glass-panel p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-sm font-semibold text-foreground uppercase tracking-wider">Recent Investigations</h2>
             <Button variant="ghost" size="sm" onClick={() => navigate('/cases')} className="text-muted-foreground hover:text-foreground text-xs">
@@ -59,7 +62,10 @@ const Dashboard = () => {
             </Button>
           </div>
           <div className="space-y-3">
-            {mockInvestigations.map((inv, i) => (
+            {investigations.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">No investigations yet. Start a new one.</p>
+            )}
+            {investigations.slice(0, 5).map((inv, i) => (
               <motion.div
                 key={inv.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -93,7 +99,7 @@ const Dashboard = () => {
             </Button>
           </div>
           <div className="space-y-3">
-            {allAlerts.slice(0, 5).map((alert, i) => (
+            {alerts.slice(0, 5).map((alert, i) => (
               <motion.div
                 key={alert.id}
                 initial={{ opacity: 0, x: 20 }}

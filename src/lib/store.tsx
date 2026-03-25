@@ -1,13 +1,14 @@
 import React, { useContext, useReducer, ReactNode } from 'react';
 import type { Alert, Evidence, GraphNode } from './mock-data';
 import { runScan } from './api/orchestrator';
-import { StoreContext, initialState, type State, type Action } from './store-context';
+import { sendAlertNotification } from './notifications';
+import { StoreContext, initialState, type State, type Action, type TaggedGraphNode, type TaggedGraphEdge } from './store-context';
 
 function storeReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'ADD_INVESTIGATION':
       return { ...state, investigations: [action.payload, ...state.investigations] };
-    
+
     case 'UPDATE_INVESTIGATION':
       return {
         ...state,
@@ -15,6 +16,17 @@ function storeReducer(state: State, action: Action): State {
           inv.id === action.payload.id ? { ...inv, ...action.payload } : inv
         ),
       };
+
+    case 'DELETE_INVESTIGATION':
+      return {
+        ...state,
+        investigations: state.investigations.filter(inv => inv.id !== action.payload),
+        graphNodes: state.graphNodes.filter(n => n.caseId !== action.payload),
+        graphEdges: state.graphEdges.filter(e => e.caseId !== action.payload),
+      };
+
+    case 'LOAD_INVESTIGATIONS':
+      return { ...state, investigations: action.payload };
 
     case 'ADD_ALERTS':
       return { ...state, alerts: [...action.payload, ...state.alerts] };
@@ -32,7 +44,7 @@ function storeReducer(state: State, action: Action): State {
         ...state,
         investigations: state.investigations.map(inv =>
           inv.id === action.payload.caseId
-            ? { ...inv, evidence: [...action.payload.evidence, ...inv.evidence] }
+            ? { ...inv, evidence: [...(action.payload.evidence as Evidence[]), ...inv.evidence] }
             : inv
         ),
       };
@@ -76,17 +88,35 @@ function storeReducer(state: State, action: Action): State {
 
     case 'SCAN_COMPLETE': {
       const { caseId, result } = action.payload;
-      
+
       const newAlerts = result.alerts.map(a => ({
         ...a,
         caseId,
       })) as Alert[];
 
+      const newNodes: TaggedGraphNode[] = (result.graphNodes as GraphNode[]).map(n => ({
+        ...n,
+        caseId,
+      }));
+      const newEdges: TaggedGraphEdge[] = result.graphEdges.map(e => ({
+        ...e,
+        caseId,
+      }));
+
+      // Trigger standard browser notification for critical/high alerts
+      const criticalAlerts = newAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
+      if (criticalAlerts.length > 0) {
+        sendAlertNotification(
+          `OSIRIS Alert: ${criticalAlerts.length} high/critical issue(s) found`,
+          criticalAlerts.map(a => a.title).join('\n')
+        );
+      }
+
       return {
         ...state,
         alerts: [...newAlerts, ...state.alerts],
-        graphNodes: [...state.graphNodes, ...(result.graphNodes as GraphNode[])],
-        graphEdges: [...state.graphEdges, ...result.graphEdges],
+        graphNodes: [...state.graphNodes, ...newNodes],
+        graphEdges: [...state.graphEdges, ...newEdges],
         investigations: state.investigations.map(inv => {
           if (inv.id !== caseId) return inv;
           return {
@@ -96,14 +126,14 @@ function storeReducer(state: State, action: Action): State {
             riskScore: result.riskScore,
             identityConfidence: result.identityConfidence,
             evidence: [...(result.evidence as unknown as Evidence[]), ...inv.evidence],
-            alerts: [...newAlerts, ...inv.alerts], // Local copy
+            alerts: [...newAlerts, ...inv.alerts],
             timeline: [
               ...inv.timeline,
               {
                 id: `t_${Date.now()}`,
                 timestamp: new Date().toISOString(),
                 event: `Scan completed. Found ${result.evidence.length} evidence items and ${result.alerts.length} alerts.`,
-                type: 'scan',
+                type: 'scan' as const,
               }
             ],
           };
@@ -177,7 +207,7 @@ export function useScanRunner() {
       });
       throw err;
     }
-  };           
+  };
 
   return { startScan };
 }
