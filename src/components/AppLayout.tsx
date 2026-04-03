@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Menu, CheckCircle } from 'lucide-react';
+import { Menu, CheckCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/lib/authContext';
 import AppSidebar from './AppSidebar';
 import LiveClock from './LiveClock';
 
@@ -15,6 +16,7 @@ const routeLabels: Record<string, string> = {
 };
 
 const AppLayout = () => {
+  const { profile } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -57,9 +59,15 @@ const AppLayout = () => {
 
         {/* Right side */}
         <div className="flex items-center gap-5">
+          {profile && (
+            <div className="flex items-center gap-1.5 text-[11px] font-display">
+              <ShieldCheck className="w-3 h-3 text-primary" />
+              <span className="uppercase tracking-wider text-primary/80">{profile.role}</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5 text-[11px] font-display text-green-400/80">
             <CheckCircle className="w-3 h-3" />
-            <span className="uppercase tracking-wider">System Operational</span>
+            <span className="uppercase tracking-wider">Operational</span>
           </div>
           <div className="w-px h-4 bg-border" />
           <LiveClock />
