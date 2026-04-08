@@ -92,7 +92,7 @@ const AppSidebar = ({ isOpen, setIsOpen }: AppSidebarProps) => {
               </span>
             </div>
             <div>
-              <h1 className="font-display text-sm font-bold text-foreground tracking-wider">OSIRIS</h1>
+              <h1 className="font-display text-sm font-bold text-foreground tracking-wider">OSINT</h1>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-status-ping" />
                 <p className="text-[10px] text-green-400/80 tracking-widest uppercase font-display">Operational</p>

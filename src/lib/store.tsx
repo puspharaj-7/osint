@@ -107,7 +107,7 @@ function storeReducer(state: State, action: Action): State {
       const criticalAlerts = newAlerts.filter(a => a.severity === 'critical' || a.severity === 'high');
       if (criticalAlerts.length > 0) {
         sendAlertNotification(
-          `OSIRIS Alert: ${criticalAlerts.length} high/critical issue(s) found`,
+          `OSINT Alert: ${criticalAlerts.length} high/critical issue(s) found`,
           criticalAlerts.map(a => a.title).join('\n')
         );
       }

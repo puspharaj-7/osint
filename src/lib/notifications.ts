@@ -20,10 +20,10 @@ export function sendAlertNotification(title: string, body: string) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
 
   try {
-    const notification = new Notification('OSIRIS Intelligence', {
+    const notification = new Notification('OSINT Intelligence', {
       body: `${title}\n${body}`,
       icon: '/favicon.ico', // fallback icon
-      tag: 'osiris-alert',
+      tag: 'osint-alert',
       requireInteraction: true
     });
 

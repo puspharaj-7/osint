@@ -85,8 +85,8 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary/10 border border-primary/20 mb-4 animate-pulse-glow">
             <Search className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="font-display text-3xl font-bold text-foreground tracking-wider mb-1">OSIRIS</h1>
-          <p className="text-sm text-muted-foreground tracking-widest uppercase">OSINT Intelligence Platform</p>
+          <h1 className="font-display text-3xl font-bold text-foreground tracking-wider mb-1">OSINT</h1>
+          <p className="text-sm text-muted-foreground tracking-widest uppercase">Intelligence Platform</p>
         </div>
 
         <div className="glass-panel p-8">

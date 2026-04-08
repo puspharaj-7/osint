@@ -19,7 +19,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storageKey: 'osiris-auth-token', // Custom key
+    storageKey: 'osint-auth-token', // Custom key
     // Disables cross-tab lock competition which causes the timeout error:
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     debug: true,
